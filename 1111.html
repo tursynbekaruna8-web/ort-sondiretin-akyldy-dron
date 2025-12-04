@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1.0" />
+<title>Fire Drone Simulation</title>
+
+<style>
+    body {
+        margin: 0;
+        background: #87ceeb;
+        overflow: hidden;
+        font-family: Arial, sans-serif;
+    }
+
+    .city {
+        position: relative;
+        width: 100%;
+        height: 100vh;
+    }
+
+    .sky-strip {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 120px;
+        background: linear-gradient(#b3e5fc,#e1f5fe);
+    }
+
+    /* 🔥 Fire Building */
+   .fire-building {
+    width: 180px;
+    height: 260px;
+    background:  #8B4513;
+    border: 3px solid #b0bec5;
+    border-radius: 6px;
+    position: absolute;
+    left: 50%;
+    bottom: 80px;
+    transform: translateX(-50%);
+}
+
+    .window-row {
+        display: flex;
+        justify-content: space-around;
+        margin-bottom: 10px;
+    }
+
+    .win {
+        width: 32px;
+        height: 32px;
+        background: #bbdefb;
+        border-radius: 4px;
+    }
+
+    .building-door {
+        width: 50px;
+        height: 60px;
+        background: #4e342e;
+        margin: 10px auto 0;
+        border-radius: 4px;
+    }
+
+    /* 🔥 Fire Effect */
+    .fire {
+        position: absolute;
+        bottom: 62px;
+        left: 52px;
+        width: 60px;
+        height: 60px;
+        background: radial-gradient(circle,#ff9800,#e65100,#b71c1c);
+        border-radius: 50%;
+        animation: fireFlame 0.6s infinite alternate;
+        z-index: 5;
+    }
+
+    @keyframes fireFlame {
+        0% { transform: scale(0.9); opacity: 0.8; }
+        100% { transform: scale(1.2); opacity: 1; }
+    }
+
+    .fire.hidden {
+        display: none;
+    }
+
+    .fire.extinguish {
+        animation: none;
+        background: #90caf9;
+    }
+
+    /* 🚒 Fire Truck */
+    .fire-truck {
+        position: absolute;
+        bottom: 30px;
+        left: 40px;
+        width: 160px;
+        height: 48px;
+        background: #d32f2f;
+        border-radius: 6px;
+    }
+
+    .truck-wheel {
+        position: absolute;
+        width: 28px;
+        height: 28px;
+        background: #111;
+        border-radius: 50%;
+        bottom: -14px;
+    }
+    .w1 { left: 8px; }
+    .w2 { left: 60px; }
+    .w3 { left: 118px; }
+
+    .ladder {
+        position: absolute;
+        top: -16px;
+        left: 20px;
+        width: 100px;
+        height: 6px;
+        background: #ccc;
+        animation: ladderMove 2s ease-in-out infinite alternate;
+        transform-origin: left;
+    }
+
+    @keyframes ladderMove {
+        from { transform: rotate(55deg); }
+        to   { transform: rotate(70deg); }
+    }
+
+    /* 🚒 Firefighter */
+    .firefighter {
+        position: absolute;
+        bottom: 100px;
+        left: 200px;
+        width: 24px;
+        height: 60px;
+    }
+    .ff-body {
+        width: 24px;
+        height: 40px;
+        background: #f5a623;
+        border-radius: 4px;
+    }
+    .ff-head {
+        width: 20px;
+        height: 20px;
+        background: #ffe0b2;
+        border-radius: 50%;
+        margin: -10px auto 0;
+    }
+    .ff-helmet {
+        position: absolute;
+        top: -2px;
+        left: 2px;
+        width: 20px;
+        height: 10px;
+        background: #e53935;
+        border-radius: 6px 6px 0 0;
+    }
+
+    /* Road */
+    .road {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 80px;
+        background: #333;
+    }
+    .road-line {
+        position: absolute;
+        top: 36px;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background-image: repeating-linear-gradient(to right,#fafafa 0 40px,transparent 40px 70px);
+    }
+
+    /* Car */
+    .car {
+        width: 80px;
+        height: 32px;
+        background: #1976d2;
+        border-radius: 8px;
+        position: absolute;
+        bottom: 10px;
+        animation: driveCar 6s linear infinite;
+    }
+    .car::before, .car::after {
+        content: "";
+        position: absolute;
+        bottom: -8px;
+        width: 16px;
+        height: 16px;
+        background: #111;
+        border-radius: 50%;
+    }
+    .car::before { left: 10px; }
+    .car::after  { right: 10px; }
+
+    @keyframes driveCar {
+        from { left: -100px; }
+        to   { left: 110%; }
+    }
+
+    /* Ambulance */
+    .ambulance {
+        width: 88px;
+        height: 34px;
+        background: #eceff1;
+        border-radius: 8px;
+        position: absolute;
+        bottom: 42px;
+        left: -110px;
+        border: 2px solid #607d8b;
+        animation: driveAmb 7s linear infinite;
+    }
+    .ambulance::before {
+        content: "+";
+        position: absolute;
+        left: 36px;
+        top: 5px;
+        font-size: 18px;
+        font-weight: bold;
+        color: #d32f2f;
+    }
+    .ambulance::after {
+        content: "";
+        position: absolute;
+        top: -6px;
+        left: 10px;
+        width: 14px;
+        height: 8px;
+        background: #1976d2;
+        border-radius: 4px;
+        box-shadow: 0 0 7px #1976d2;
+        animation: siren 0.4s alternate infinite;
+    }
+
+    @keyframes driveAmb {
+        from { left: -110px; }
+        to   { left: 110%; }
+    }
+
+    @keyframes siren {
+        from { background: #1976d2; }
+        to   { background: #ff6f00; }
+    }
+
+    /* Robot Cop */
+    .robot-cop {
+        position: absolute;
+        bottom: 90px;
+        left: -40px;
+        width: 22px;
+        height: 40px;
+        animation: copWalk 9s linear infinite;
+    }
+    .robot-cop-head {
+        width: 16px;
+        height: 16px;
+        background: #e0e0e0;
+        border-radius: 50%;
+        margin: 0 auto;
+    }
+    .robot-cop-body {
+        width: 16px;
+        height: 22px;
+        background: #1f2937;
+        border-radius: 4px;
+        margin: 0 auto;
+        position: relative;
+    }
+    .robot-cop-body::before {
+        content: "";
+        position: absolute;
+        top: 4px;
+        left: 3px;
+        width: 10px;
+        height: 6px;
+        background: #3b82f6;
+        border-radius: 2px;
+    }
+
+    @keyframes copWalk {
+        from { left: -40px; }
+        to   { left: 110%; }
+    }
+
+    /* Drone */
+    .drone {
+        position: absolute;
+        top: 40px;
+        left: 15%;
+        width: 80px;
+        height: 36px;
+        cursor: pointer;
+        animation: droneMove 10s linear infinite alternate;
+        z-index: 4;
+    }
+
+    @keyframes droneMove {
+        0% { left: 12%; top: 45px; }
+        50% { left: 50%; top: 30px; }
+        100% { left: 85%; top: 40px; }
+    }
+
+    .drone-body {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        right: 10px;
+        height: 18px;
+        background: linear-gradient(#374151,#9ca3af);
+        border-radius: 10px;
+    }
+
+    .drone-camera {
+        position: absolute;
+        bottom: -8px;
+        left: 30px;
+        width: 20px;
+        height: 12px;
+        border-radius: 6px;
+        background: #111827;
+    }
+    .drone-camera::before {
+        content: "";
+        position: absolute;
+        top: 2px;
+        left: 5px;
+        width: 10px;
+        height: 8px;
+        background: radial-gradient(circle,#6ee7b7,#0f766e,#000);
+        border-radius: 50%;
+    }
+
+    .arm {
+        position: absolute;
+        top: 4px;
+        width: 26px;
+        height: 4px;
+        background: #4b5563;
+    }
+    .arm.left { left: -10px; }
+    .arm.right { right: -10px; }
+
+    .propeller {
+        position: absolute;
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        border: 2px solid #9ca3af;
+        background: #f3f4f6;
+        animation: propSpin 0.22s linear infinite;
+    }
+    .propeller.left { left: -9px; top: -7px; }
+    .propeller.right { right: -9px; top: -7px; }
+
+    @keyframes propSpin {
+        to { transform: rotate(360deg); }
+    }
+
+    /* Water stream */
+    #water-stream {
+        position: absolute;
+        width: 6px;
+        height: 0;
+        background: linear-gradient(#e0f2fe,#38bdf8,#0ea5e9);
+        border-radius: 3px;
+        opacity: 0;
+        z-index: 3;
+    }
+
+    #water-stream.shoot {
+        animation: waterDown 0.8s forwards;
+    }
+
+    @keyframes waterDown {
+        from { height: 0; opacity: 0; }
+        to   { height: 140px; opacity: 1; }
+    }
+
+    .hint {
+        position: absolute;
+        bottom: 86px;
+        right: 14px;
+        font-size: 12px;
+        color: #111827;
+        background: rgba(255,255,255,0.8);
+        padding: 4px 8px;
+        border-radius: 999px;
+    }
+</style>
+</head>
+
+<body>
+<div class="city" id="city">
+
+    <div class="sky-strip"></div>
+
+    <!-- Drone -->
+    <div class="drone" id="drone">
+        <div class="drone-body"></div>
+        <div class="drone-camera"></div>
+        <div class="arm left"><div class="propeller left"></div></div>
+        <div class="arm right"><div class="propeller right"></div></div>
+    </div>
+
+    <div id="water-stream"></div>
+
+    <!-- Fire building -->
+    <div class="fire-building">
+        <div class="window-row"><div class="win"></div><div class="win"></div><div class="win"></div></div>
+        <div class="window-row"><div class="win"></div><div class="win"></div><div class="win"></div></div>
+        <div class="window-row"><div class="win"></div><div class="win"></div><div class="win"></div></div>
+        <div class="building-door"></div>
+        <div class="fire" id="fire"></div>
+    </div>
+
+    <!-- Fire truck -->
+    <div class="fire-truck">
+        <div class="truck-wheel w1"></div>
+        <div class="truck-wheel w2"></div>
+        <div class="truck-wheel w3"></div>
+        <div class="ladder"></div>
+    </div>
+
+    <!-- Firefighter -->
+    <div class="firefighter">
+        <div class="ff-body"></div>
+        <div class="ff-head"></div>
+        <div class="ff-helmet"></div>
+    </div>
+
+    <!-- Robot cop -->
+    <div class="robot-cop">
+        <div class="robot-cop-head"></div>
+        <div class="robot-cop-body"></div>
+    </div>
+
+    <!-- Road and vehicles -->
+    <div class="road">
+        <div class="road-line"></div>
+        <div class="car"></div>
+        <div class="ambulance"></div>
+    </div>
+
+    <div class="hint">Дронға бас немесе Space пернесін бас – өртті сөндір</div>
+</div>
+
+<script>
+const city  = document.getElementById("city");
+const drone = document.getElementById("drone");
+const water = document.getElementById("water-stream");
+const fire  = document.getElementById("fire");
+
+let fireActive = true;
+let reigniteTimer = null;
+
+function sprayWater() {
+    if (!fireActive) return;
+
+    const droneRect = drone.getBoundingClientRect();
+    const cityRect  = city.getBoundingClientRect();
+
+    const centerX = droneRect.left + droneRect.width / 2;
+    const startTop = droneRect.bottom - cityRect.top;
+
+    water.style.left = (centerX - cityRect.left - 3) + "px";
+    water.style.top  = startTop + "px";
+
+    water.classList.remove("shoot");
+    void water.offsetWidth;
+    water.classList.add("shoot");
+
+    fire.classList.remove("hidden");
+    fire.classList.add("extinguish");
+    fireActive = false;
+
+    setTimeout(() => {
+        fire.classList.add("hidden");
+        fire.classList.remove("extinguish");
+    }, 900);
+
+    if (reigniteTimer) clearTimeout(reigniteTimer);
+    reigniteTimer = setTimeout(() => {
+        fire.classList.remove("hidden");
+
+        fire.style.animation = "none";
+        void fire.offsetWidth;
+        fire.style.animation = "fireFlame 0.6s infinite alternate";
+
+        fireActive = true;
+    }, 5000);
+
+    setTimeout(() => {
+        water.classList.remove("shoot");
+    }, 900);
+}
+
+drone.addEventListener("click", sprayWater);
+
+document.addEventListener("keydown", (e) => {
+    if (e.code === "Space") {
+        e.preventDefault();
+        sprayWater();
+    }
+});
+</script>
+
+</body>
+</html>
